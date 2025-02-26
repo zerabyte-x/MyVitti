@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useWebSocket } from "@/hooks/use-websocket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,9 +14,17 @@ interface ChatInterfaceProps {
   chats: Chat[];
 }
 
+interface TypingUser {
+  id: number;
+  username: string;
+}
+
 export default function ChatInterface({ chats }: ChatInterfaceProps) {
   const { user } = useAuth();
+  const { sendMessage, subscribe } = useWebSocket();
   const [message, setMessage] = useState("");
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout>();
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -25,11 +34,58 @@ export default function ChatInterface({ chats }: ChatInterfaceProps) {
       });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (chat) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
       setMessage("");
+      // Broadcast the message via WebSocket
+      sendMessage({
+        type: 'chat_message',
+        chatId: chat.id,
+        message: chat.messages[chat.messages.length - 1].content,
+        user
+      });
     }
   });
+
+  useEffect(() => {
+    subscribe((message) => {
+      switch (message.type) {
+        case 'chat_message':
+          queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
+          break;
+        case 'typing_status':
+          setTypingUsers(prev => {
+            if (message.isTyping) {
+              if (prev.find(u => u.id === message.user.id)) return prev;
+              return [...prev, message.user];
+            } else {
+              return prev.filter(u => u.id !== message.user.id);
+            }
+          });
+          break;
+      }
+    });
+  }, [subscribe]);
+
+  const handleTyping = () => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    sendMessage({
+      type: 'typing',
+      chatId: chats[chats.length - 1]?.id,
+      user,
+      isTyping: true
+    });
+
+    setTypingTimeout(setTimeout(() => {
+      sendMessage({
+        type: 'typing',
+        chatId: chats[chats.length - 1]?.id,
+        user,
+        isTyping: false
+      });
+    }, 2000));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +128,20 @@ export default function ChatInterface({ chats }: ChatInterfaceProps) {
             )}
           </div>
         </ScrollArea>
-        
+
+        {typingUsers.length > 0 && (
+          <div className="text-sm text-muted-foreground italic">
+            {typingUsers.map(u => u.username).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex gap-2 mt-4">
           <Input
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              handleTyping();
+            }}
             placeholder="Ask your question..."
             disabled={chatMutation.isPending}
           />

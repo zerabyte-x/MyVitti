@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { getAIResponse, analyzeFile } from "./openai";
 import { supportedLanguages } from "@shared/schema";
+import { WebSocketManager } from "./websocket";
 
 const upload = multer({
   limits: {
@@ -40,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await getAIResponse(message, language);
       const chat = await storage.createChat(req.user!.id, message);
       const updatedChat = await storage.updateChat(chat.id, response);
-      
+
       res.json(updatedChat);
     } catch (error) {
       res.status(500).json({ message: "Failed to process chat" });
@@ -65,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const content = req.file.buffer.toString();
       const analysis = await analyzeFile(content, req.user!.preferredLanguage);
-      
+
       const file = await storage.createFile(req.user!.id, {
         userId: req.user!.id,
         filename: req.file.originalname,
@@ -100,5 +101,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  new WebSocketManager(httpServer);
   return httpServer;
 }
