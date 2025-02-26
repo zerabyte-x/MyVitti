@@ -1,0 +1,105 @@
+Primary use case is AI assisted tutoring and also a group collaboration for paid subscription.
+It will be a freemium model , but pre and post launch there will be partnerships with schools and
+content creators.
+Keep the benchmarks as high as possibly under 200ms and accuracy above 95% with open
+source resources , real time processing is very critical along with equal focus on performance.
+The UI/UX should look a mixture of Netflix and Notebook LM , colour scheme should be
+professional and elegant.
+Design should priortise mobile first experince but this is an MVP so it will be a web first
+experince.
+Users should be able to upload files like videos upto 50mb in free tier and paid can upload upto
+500mb and 1gb and henceforth with the different tiers or 100mb pdf or 3 Images inat once in
+any formats . We can integrate Youtube resources.
+The user data should be secure and in complaince to both indian and International laws, use any
+open source resources if available thats acceptable world wide, we can have parental control for
+users under 13 years of age.
+We can have community collaboration for paid tiers. No gamification planned
+Based on the clarified details, the platform will serve as a global AI-powered learning platform,
+launching first in India, with a focus on AI-assisted tutoring and group collaboration. It will
+adopt a freemium model with paid tiers offering enhanced features. The platform prioritizes
+real-time performance, data security compliance, and a mobile-first design approach for
+future scalability.
+Below is a detailed breakdown of the project:
+The platform isn't exclusively for Indian students,
+it will serve a global audience but first it will be
+launching in India
+No existing collaboartion or in near future .
+Conceptualization of the AIPowered Learning Platform
+1. AI-Assisted Tutoring:
+Natural language interaction with Mistral-7B-Instruct for answering questions,
+explanations, and providing study assistance.
+Indic language support via IndicTrans2 and IndicBERT for multilingual accessibility.
+2. Group Collaboration Paid Tiers):
+Virtual study groups with shared resources.
+Real-time chat and file-sharing capabilities.
+3. Multimodal Content Support:
+Document parsing using Layout Parser + LayoutLM.
+Video transcription powered by Whisper.
+Image analysis using LLaVA-NeXT or OpenFlamingo.
+Voice interface via Bhashini for hands-free interaction.
+. File Uploads:
+Free Tier: Upload files up to 50MB (videos), 100MB (PDFs), or 3 images at once.
+Paid Tiers: Increased limits (500MB, 1GB, etc.) based on subscription level.
+5. YouTube Integration:
+Ability to pull educational videos from YouTube for transcription or analysis.
+. Parental Controls:
+Restricted access and content monitoring for users under 13 years of age.
+7. Community Collaboration Paid Tiers):
+Forums or group discussions for collaborative learning among paid subscribers.
+Response Time: Under 200ms for most queries.
+Accuracy: ≥95% for English; ≥90% for Indic languages.
+Real-Time Processing: Critical for user satisfaction.
+Platform Features
+Core Functionalities
+Technical Requirements
+Performance Benchmarks
+Open-source stack to reduce costs while maintaining high performance:
+Vector Database: Milvus.
+Inference Optimization: ONNX Runtime.
+Deployment: BentoML.
+Orchestration: LangChain or LlamaIndex.
+Compliance with Indian IT laws, GDPR, and other international standards.
+Use open-source tools with global acceptance for encryption and data management.
+Inspired by Netflix (intuitive navigation) and Notebook LM (clean, professional interface).
+Professional and elegant color scheme (e.g., shades of blue, white, and grey).
+Mobile-first design philosophy but MVP will be web-first.
+1. Dashboard:
+Personalized recommendations based on user activity.
+Quick access to uploaded files, recent collaborations, and AI tutor interactions.
+2. File Upload Interface:
+Drag-and-drop functionality with clear file size limits displayed per tier.
+3. AI Tutor Chat Interface:
+Conversational UI with text/voice input options.
+Real-time response display with multimedia outputs (e.g., graphs, images).
+. Collaboration Hub Paid Tiers):
+Group chat interface with file-sharing capabilities.
+Discussion threads for collaborative projects.
+Infrastructure
+Data Security
+UI/UX Design
+Design Principles
+Key Screens
+Phase Duration Focus Areas Cost Estimate
+MVP 7 months Core functionalities, web-first experience $65K
+Scaling 5 months Mobile app development Android/iOS, performance optimization $25K
+User Input (Voice/Text) -> FastAPI Gateway -> Auth (Keycloak) ->
+File Upload -> Document Parser / Video Transcription / Image Analysis ->
+Milvus Vector DB -> LangChain Orchestrator ->
+Mistral-7B/IndicTrans2 -> Response Generator ->
+Bhashini TTS -> User Output -> Firebase/GDrive Sync
+1. Freemium Model:
+Free Tier: Basic AI tutoring and limited file uploads.
+Paid Tiers: Enhanced features like larger file uploads, group collaboration, and priority
+support.
+2. Partnerships:
+Collaborations with schools and content creators pre- and post-launch to drive
+adoption.
+3. Revenue Streams:
+Subscription fees from paid tiers.
+Potential integration of premium educational content in later phases.
+1. Use globally accepted open-source tools for encryption and data handling (e.g., OpenSSL).
+2. Implement parental controls for users under 13 years old to restrict inappropriate content.
+3. Ensure compliance with GDPR, Indian IT laws, and other relevant regulations through regular
+audits.
+This conceptualization aligns with your vision while ensuring scalability, cost-efficiency, and
+global readiness. Let me know if youʼd like further refinements!
