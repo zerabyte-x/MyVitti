@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ComponentProps } from "react";
+import { ComponentProps, forwardRef } from "react";
 
-const MotionButton = motion(Button);
+const MotionButton = motion(
+  forwardRef<HTMLButtonElement, ComponentProps<typeof Button>>((props, ref) => (
+    <Button ref={ref} {...props} />
+  ))
+);
 
 export function AnimatedButton({ children, ...props }: ComponentProps<typeof Button>) {
   return (
