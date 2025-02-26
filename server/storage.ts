@@ -1,89 +1,70 @@
-import { IStorage } from "./types";
-import { Chat, File, InsertUser, User } from "@shared/schema";
+import { users, chats, files, type User, type InsertUser, type Chat, type File } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private chats: Map<number, Chat>;
-  private files: Map<number, File>;
+export class DatabaseStorage {
   sessionStore: session.Store;
-  currentId: number;
 
   constructor() {
-    this.users = new Map();
-    this.chats = new Map();
-    this.files = new Map();
-    this.currentId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000, // Clear expired entries every 24h
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { 
-      ...insertUser, 
-      id,
-      isAdmin: false
-    };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async createChat(userId: number, message: string): Promise<Chat> {
-    const id = this.currentId++;
-    const chat: Chat = {
-      id,
+    const [chat] = await db.insert(chats).values({
       userId,
       messages: [{ role: "user", content: message }],
       createdAt: new Date().toISOString(),
-    };
-    this.chats.set(id, chat);
+    }).returning();
     return chat;
   }
 
   async updateChat(chatId: number, message: string): Promise<Chat> {
-    const chat = this.chats.get(chatId);
+    const [chat] = await db.select().from(chats).where(eq(chats.id, chatId));
     if (!chat) throw new Error("Chat not found");
-    
-    const updatedChat: Chat = {
-      ...chat,
-      messages: [...chat.messages, { role: "assistant", content: message }],
-    };
-    this.chats.set(chatId, updatedChat);
+
+    const updatedMessages = [...chat.messages, { role: "assistant", content: message }];
+    const [updatedChat] = await db
+      .update(chats)
+      .set({ messages: updatedMessages })
+      .where(eq(chats.id, chatId))
+      .returning();
     return updatedChat;
   }
 
   async getChats(userId: number): Promise<Chat[]> {
-    return Array.from(this.chats.values()).filter(
-      (chat) => chat.userId === userId,
-    );
+    return db.select().from(chats).where(eq(chats.userId, userId));
   }
 
   async createFile(userId: number, file: Omit<File, "id">): Promise<File> {
-    const id = this.currentId++;
-    const newFile: File = { ...file, id };
-    this.files.set(id, newFile);
+    const [newFile] = await db.insert(files).values(file).returning();
     return newFile;
   }
 
   async getFiles(userId: number): Promise<File[]> {
-    return Array.from(this.files.values()).filter(
-      (file) => file.userId === userId,
-    );
+    return db.select().from(files).where(eq(files.userId, userId));
   }
 
   async getAdminStats(): Promise<{
@@ -91,12 +72,16 @@ export class MemStorage implements IStorage {
     totalChats: number;
     totalFiles: number;
   }> {
+    const [usersCount] = await db.select({ count: sql`count(*)` }).from(users);
+    const [chatsCount] = await db.select({ count: sql`count(*)` }).from(chats);
+    const [filesCount] = await db.select({ count: sql`count(*)` }).from(files);
+
     return {
-      totalUsers: this.users.size,
-      totalChats: this.chats.size,
-      totalFiles: this.files.size,
+      totalUsers: Number(usersCount?.count || 0),
+      totalChats: Number(chatsCount?.count || 0),
+      totalFiles: Number(filesCount?.count || 0),
     };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
