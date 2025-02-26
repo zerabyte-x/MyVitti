@@ -22,7 +22,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">iVidya</h1>
+          <h1 className="text-2xl font-bold">MyVitti</h1>
           <div className="flex items-center gap-4">
             <LanguageSelector />
             {user?.isAdmin && (

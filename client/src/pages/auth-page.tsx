@@ -33,7 +33,7 @@ export default function AuthPage() {
       <div className="flex items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Welcome to iVidya</CardTitle>
+            <CardTitle>Welcome to MyVitti</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
@@ -107,7 +107,7 @@ export default function AuthPage() {
             AI-Powered Learning Platform
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Join iVidya to experience personalized AI tutoring, multilingual support, and interactive learning tools.
+            Join MyVitti to experience personalized AI tutoring, multilingual support, and interactive learning tools.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white rounded-lg shadow-sm">
