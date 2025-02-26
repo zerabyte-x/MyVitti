@@ -64,7 +64,31 @@ export class WebSocketManager {
     this.broadcastUserStatus(user, true);
   }
 
-  private handleDisconnect(ws: WebSocket) {
+  private async handleAudioDiscussion(ws: WebSocket, data: any) {
+  const processor = new ConversationProcessor();
+  const segments = await processor.generateDiscussion(data.content, data.language);
+  
+  for (const segment of segments) {
+    ws.send(JSON.stringify({
+      type: 'audio_segment',
+      audio: segment.audio,
+      text: segment.text,
+      speaker: segment.speaker
+    }));
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+}
+
+private async handleUserQuestion(ws: WebSocket, data: any) {
+  const processor = new ConversationProcessor();
+  const question = await processor.handleUserQuestion(data.audio, data.language);
+  ws.send(JSON.stringify({
+    type: 'question_response',
+    text: question
+  }));
+}
+
+private handleDisconnect(ws: WebSocket) {
     for (const [userId, conn] of this.connections) {
       if (conn.ws === ws) {
         this.connections.delete(userId);
