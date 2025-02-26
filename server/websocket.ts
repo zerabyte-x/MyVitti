@@ -1,6 +1,6 @@
 import { WebSocket, WebSocketServer } from 'ws';
 import type { Server } from 'http';
-import { User } from '@shared/schema';
+import { User, WebSocketMessage, wsMessageSchema } from '@shared/schema';
 
 interface ConnectedUser {
   ws: WebSocket;
@@ -21,19 +21,33 @@ export class WebSocketManager {
       ws.on('message', async (message: string) => {
         try {
           const data = JSON.parse(message);
-          switch (data.type) {
+          const validatedMessage = wsMessageSchema.parse(data);
+
+          switch (validatedMessage.type) {
             case 'user_connected':
-              this.handleUserConnected(ws, data.user);
+              this.handleUserConnected(ws, validatedMessage.user);
               break;
             case 'chat_message':
-              this.broadcastChatMessage(data.chatId, data.message, data.user);
+              this.broadcastChatMessage(
+                validatedMessage.chatId,
+                validatedMessage.message,
+                validatedMessage.user
+              );
               break;
             case 'typing':
-              this.broadcastTypingStatus(data.chatId, data.user, data.isTyping);
+              this.broadcastTypingStatus(
+                validatedMessage.chatId,
+                validatedMessage.user,
+                validatedMessage.isTyping
+              );
               break;
           }
         } catch (error) {
           console.error('WebSocket message error:', error);
+          ws.send(JSON.stringify({
+            type: 'error',
+            message: 'Invalid message format'
+          }));
         }
       });
 
@@ -49,7 +63,7 @@ export class WebSocketManager {
   }
 
   private handleDisconnect(ws: WebSocket) {
-    for (const [userId, conn] of this.connections.entries()) {
+    for (const [userId, conn] of this.connections) {
       if (conn.ws === ws) {
         this.connections.delete(userId);
         this.broadcastUserStatus(conn.user, false);

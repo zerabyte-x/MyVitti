@@ -1,10 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './use-auth';
-
-type WebSocketMessage = {
-  type: string;
-  [key: string]: any;
-};
+import { WebSocketMessage } from '@shared/schema';
 
 export function useWebSocket() {
   const { user } = useAuth();
@@ -16,7 +12,7 @@ export function useWebSocket() {
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -25,7 +21,7 @@ export function useWebSocket() {
       ws.send(JSON.stringify({
         type: 'user_connected',
         user,
-      }));
+      } as WebSocketMessage));
     };
 
     ws.onclose = () => {

@@ -42,3 +42,33 @@ export type File = typeof files.$inferSelect;
 
 export const supportedLanguages = ["en", "hi", "ta"] as const;
 export type SupportedLanguage = typeof supportedLanguages[number];
+
+export const wsMessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("user_connected"),
+    user: z.object({
+      id: z.number(),
+      username: z.string(),
+    }),
+  }),
+  z.object({
+    type: z.literal("chat_message"),
+    chatId: z.number(),
+    message: z.string(),
+    user: z.object({
+      id: z.number(),
+      username: z.string(),
+    }),
+  }),
+  z.object({
+    type: z.literal("typing"),
+    chatId: z.number(),
+    user: z.object({
+      id: z.number(),
+      username: z.string(),
+    }),
+    isTyping: z.boolean(),
+  }),
+]);
+
+export type WebSocketMessage = z.infer<typeof wsMessageSchema>;
