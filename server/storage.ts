@@ -1,6 +1,6 @@
 import { users, chats, files, type User, type InsertUser, type Chat, type File } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -72,9 +72,9 @@ export class DatabaseStorage {
     totalChats: number;
     totalFiles: number;
   }> {
-    const [usersCount] = await db.select({ count: sql`count(*)` }).from(users);
-    const [chatsCount] = await db.select({ count: sql`count(*)` }).from(chats);
-    const [filesCount] = await db.select({ count: sql`count(*)` }).from(files);
+    const [usersCount] = await db.select({ count: sql<string>`count(*)` }).from(users);
+    const [chatsCount] = await db.select({ count: sql<string>`count(*)` }).from(chats);
+    const [filesCount] = await db.select({ count: sql<string>`count(*)` }).from(files);
 
     return {
       totalUsers: Number(usersCount?.count || 0),
